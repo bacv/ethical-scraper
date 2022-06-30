@@ -3,6 +3,7 @@ package lib
 import "sync/atomic"
 import "sync"
 
+// JobFn is a type describing a generic worker pool task.
 type JobFn[T any] func(params T)
 
 type pool[T any] struct {
@@ -12,6 +13,7 @@ type pool[T any] struct {
 	doneC chan struct{}
 }
 
+// NewPool returns a worker pool that has a defined size and defined generic taks function.
 func NewPool[T any] (poolSize uint32, jobFn JobFn[T]) *pool[T] {
 	return &pool[T]{
 		queue: make(chan T),
@@ -21,14 +23,17 @@ func NewPool[T any] (poolSize uint32, jobFn JobFn[T]) *pool[T] {
 	}
 }
 
+// Start spawns the worker pool.
 func (p *pool[T]) Start() {
 	go p.worker()
 }
 
+// Do passes the task parameters to the task function and queues it for the execution in the pool.
 func (p *pool[T]) Do(task T) {
 	p.queue <- task
 }
 
+// Done informs the initiator when all the tasks provided to the pool are finished.
 func (p *pool[T]) Done() <-chan struct{} {
 	close(p.queue)
 	return p.doneC
