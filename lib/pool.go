@@ -6,7 +6,7 @@ import "sync"
 // JobFn is a type describing a generic worker pool task.
 type JobFn[T any] func(params T)
 
-type pool[T any] struct {
+type Pool[T any] struct {
 	queue chan T
 	poolSize uint32
 	jobFn JobFn[T]
@@ -14,8 +14,8 @@ type pool[T any] struct {
 }
 
 // NewPool returns a worker pool that has a defined size and defined generic taks function.
-func NewPool[T any] (poolSize uint32, jobFn JobFn[T]) *pool[T] {
-	return &pool[T]{
+func NewPool[T any] (poolSize uint32, jobFn JobFn[T]) *Pool[T] {
+	return &Pool[T]{
 		queue: make(chan T),
 		poolSize: poolSize,
 		jobFn: jobFn,
@@ -24,22 +24,22 @@ func NewPool[T any] (poolSize uint32, jobFn JobFn[T]) *pool[T] {
 }
 
 // Start spawns the worker pool.
-func (p *pool[T]) Start() {
+func (p *Pool[T]) Start() {
 	go p.worker()
 }
 
 // Do passes the task parameters to the task function and queues it for the execution in the pool.
-func (p *pool[T]) Do(task T) {
+func (p *Pool[T]) Do(task T) {
 	p.queue <- task
 }
 
 // Done informs the initiator when all the tasks provided to the pool are finished.
-func (p *pool[T]) Done() <-chan struct{} {
+func (p *Pool[T]) Done() <-chan struct{} {
 	close(p.queue)
 	return p.doneC
 }
 
-func (p *pool[T]) worker() {
+func (p *Pool[T]) worker() {
 	var jobCount uint32
 	var wg sync.WaitGroup
 

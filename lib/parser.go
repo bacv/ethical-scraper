@@ -37,8 +37,5 @@ func isExternal(host, url string) bool {
 }
 
 func hasScheme(url string) bool {
-	if strings.HasPrefix(url, "http") || strings.HasPrefix(url, "https") {
-		return true
-	}
-	return false
+	return strings.HasPrefix(url, "http") || strings.HasPrefix(url, "https")
 }
